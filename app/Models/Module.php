@@ -9,8 +9,12 @@ class Module extends Model
     protected $fillable = [
         'level_id',
         'title',
-        'description',
+        'status',
     ];
+
+    protected $casts = [
+        'status' => 'boolean',
+        ];
 
     public function level()
     {

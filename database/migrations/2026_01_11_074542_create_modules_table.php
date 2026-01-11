@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('level_id')->constrained('levels')->cascadeOnDelete();
             $table->string('title');
-            $table->boolean('status');
+            $table->boolean('status')->default(true);
             $table->timestamps();
         });
     }
