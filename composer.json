@@ -38,7 +38,8 @@
     "scripts": {
         "refresh": [
             "@php artisan db:wipe",
-            "@php artisan migrate:fresh --seed"
+            "@php artisan migrate:fresh --seed",
+            "@php artisan optimize:clear"
         ],
         "setup": [
             "composer install",

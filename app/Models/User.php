@@ -29,6 +29,8 @@ class User extends Authenticatable
         'name',
         'email',
         'phone',
+        'role',
+        'is_blocked',
         'password',
     ];
 
@@ -63,7 +65,13 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_blocked' => 'boolean',
         ];
+    }
+
+    public function isAdmin()
+    {
+        return $this->role === 'admin';
     }
 
     public function notes()

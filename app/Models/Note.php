@@ -15,11 +15,11 @@ class Note extends Model implements HasMedia
         'title',
         'description',
         'price',
-        'is_approved',
+        'status',
     ];
 
     protected $casts = [
-        'is_approved' => 'boolean',
+        'status' => 'boolean',
         'price' => 'decimal:2',
     ];
 
@@ -32,6 +32,17 @@ class Note extends Model implements HasMedia
     {
         return $this->belongsTo(User::class);
     }
+
+    public function isApproved()
+    {
+        return $this->status === 'approved';
+    }
+
+    public function hasPurchases()
+    {
+        return $this->purchases()->exists();
+    }
+
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('note_file')->singleFile();

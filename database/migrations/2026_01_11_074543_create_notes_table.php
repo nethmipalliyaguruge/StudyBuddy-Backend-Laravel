@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('title');
             $table->text('description')->nullable();
             $table->decimal('price', 8, 2)->default(0);
-            $table->boolean('is_approved')->default(true);
+            $table->enum('status', ['approved', 'pending', 'disabled'])->default('approved');
             $table->timestamps();
         });
     }
