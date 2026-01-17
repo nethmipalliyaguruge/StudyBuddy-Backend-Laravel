@@ -15,8 +15,8 @@ use App\Http\Controllers\BrowseController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-//    return view('welcome');
-    return redirect()->route('materials.index');
+    return view('welcome');
+//    return redirect()->route('materials.index');
 });
 
 Route::middleware([
@@ -94,6 +94,7 @@ Route::middleware(['auth', 'blocked'])->group(function () {
 
     Route::post('/purchase', [PurchaseController::class, 'store'])
         ->name('purchase.store');
+    Route::get('/upload-note', [NoteController::class, 'create'])->name('notes.create');
 
     Route::get('/my-notes', [NoteController::class, 'myNotes'])
         ->name('notes.mine');
