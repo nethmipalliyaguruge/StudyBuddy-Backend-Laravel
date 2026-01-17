@@ -34,10 +34,11 @@ class Note extends Model implements HasMedia
         return $this->belongsTo(User::class);
     }
 
-    public function isApproved()
+    public function isApproved(): bool
     {
-        return $this->status === 'approved';
+        return $this->getRawOriginal('status') === 'approved';
     }
+
 
     public function purchases()
     {
