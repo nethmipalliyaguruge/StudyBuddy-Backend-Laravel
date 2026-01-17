@@ -376,8 +376,18 @@
                                         </div>
                                     </div>
                                     <div class="flex flex-wrap gap-2">
-                                        <!-- Approve -->
-                                        @if($note->status !== 'approved')
+                                        <!-- Enable (for disabled materials) -->
+                                        @if($note->status === 'disabled')
+                                            <form method="POST" action="{{ route('admin.materials.enable', $note) }}">
+                                                @csrf
+                                                <button type="submit" class="btn-sm bg-green-600 text-white hover:bg-green-700">
+                                                    <i class="fas fa-check mr-1"></i>Enable
+                                                </button>
+                                            </form>
+                                        @endif
+
+                                        <!-- Approve (for pending materials) -->
+                                        @if($note->status === 'pending')
                                             <form method="POST" action="{{ route('admin.materials.approve', $note) }}">
                                                 @csrf
                                                 <button type="submit" class="btn-sm bg-green-600 text-white hover:bg-green-700">

@@ -68,6 +68,8 @@ Route::middleware(['auth', 'blocked', 'admin'])
             ->name('materials.approve');
         Route::post('/materials/{note}/pending', [AdminMaterialController::class, 'pending'])
             ->name('materials.pending');
+        Route::post('/materials/{note}/enable', [AdminMaterialController::class, 'enable'])
+            ->name('materials.enable');
         Route::delete('/materials/{note}', [AdminMaterialController::class, 'destroy'])
             ->name('materials.destroy');
 
@@ -108,6 +110,8 @@ Route::middleware(['auth', 'blocked'])->group(function () {
         ->name('notes.store');
     Route::put('/notes/{note}', [NoteController::class, 'update'])
         ->name('notes.update');
+    Route::post('/notes/{note}/restore', [NoteController::class, 'restore'])
+        ->name('notes.restore');
     Route::delete('/notes/{note}', [NoteController::class, 'destroy'])
         ->name('notes.destroy');
 

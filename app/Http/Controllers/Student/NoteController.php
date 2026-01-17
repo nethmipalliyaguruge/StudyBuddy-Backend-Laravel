@@ -87,17 +87,22 @@ class NoteController extends Controller
         abort_if($note->user_id !== auth()->id(), 403);
 
         if ($note->purchases()->exists()) {
-            // Soft disable (keep buyer history)
-            $note->update(['status' => 'pending']);
+            $note->update(['status' => 'disabled']);
 
-            return back()->with(
-                'success',
-                'Note has purchases and was disabled instead of deleted.'
-            );
+            return back()->with('success', 'Note has been disabled. Buyers can still access it.');
         }
 
         $note->delete();
 
         return back()->with('success', 'Note deleted successfully');
+    }
+
+    public function restore(Note $note)
+    {
+        abort_if($note->user_id !== auth()->id(), 403);
+
+        $note->update(['status' => 'approved']);
+
+        return back()->with('success', 'Note restored successfully');
     }
 }

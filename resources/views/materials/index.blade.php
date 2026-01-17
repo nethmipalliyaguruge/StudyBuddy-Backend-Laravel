@@ -37,12 +37,29 @@
             <div class="flex-grow">
                 <!-- Results Header -->
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-                    <p class="text-gray-600">
-                        Showing <span class="font-semibold text-gray-900">{{ $notes->count() }}</span> results
-                        @if(request('search'))
-                            for "<span class="font-semibold text-gray-900">{{ request('search') }}</span>"
-                        @endif
-                    </p>
+                    <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+                        <p class="text-gray-600">
+                            Showing <span class="font-semibold text-gray-900">{{ $notes->count() }}</span> results
+                            @if(request('search'))
+                                for "<span class="font-semibold text-gray-900">{{ request('search') }}</span>"
+                            @endif
+                        </p>
+
+                        <!-- Sort Dropdown -->
+                        <form method="GET" action="{{ route('materials.index') }}" class="flex items-center gap-2">
+                            @foreach(request()->except('sort', 'page') as $key => $value)
+                                @if($value)
+                                    <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                                @endif
+                            @endforeach
+                            <select name="sort" onchange="this.form.submit()" class="select text-sm py-1.5">
+                                <option value="newest" {{ request('sort', 'newest') == 'newest' ? 'selected' : '' }}>Newest First</option>
+                                <option value="oldest" {{ request('sort') == 'oldest' ? 'selected' : '' }}>Oldest First</option>
+                                <option value="price_high" {{ request('sort') == 'price_high' ? 'selected' : '' }}>Price: High to Low</option>
+                                <option value="price_low" {{ request('sort') == 'price_low' ? 'selected' : '' }}>Price: Low to High</option>
+                            </select>
+                        </form>
+                    </div>
 
                     @auth
                         <a href="{{ route('notes.create') }}" class="btn-primary btn-sm">

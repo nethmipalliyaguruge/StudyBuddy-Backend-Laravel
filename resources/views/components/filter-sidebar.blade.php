@@ -1,11 +1,11 @@
-@props(['schools', 'levels' => collect(), 'modules' => collect(), 'selectedSchool' => null, 'selectedLevel' => null, 'selectedModule' => null])
+@props(['schools', 'levels' => collect(), 'modules' => collect(), 'selectedSchool' => null, 'selectedLevel' => null, 'selectedModule' => null, 'minPrice' => null, 'maxPrice' => null])
 
 <aside {{ $attributes->merge(['class' => 'bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-6']) }}>
     <div class="flex items-center justify-between">
         <h3 class="font-semibold text-gray-900">
             <i class="fas fa-filter mr-2 text-primary"></i>Filters
         </h3>
-        @if($selectedSchool || $selectedLevel || $selectedModule)
+        @if($selectedSchool || $selectedLevel || $selectedModule || request('min_price') || request('max_price'))
             <a href="{{ route('materials.index') }}" class="text-sm text-primary hover:underline">
                 Clear all
             </a>
@@ -50,6 +50,28 @@
                     </option>
                 @endforeach
             </select>
+        </div>
+
+        <!-- Price Range Filter -->
+        <div class="space-y-2 mt-4">
+            <label class="form-label">Price Range (LKR)</label>
+            <div class="flex gap-2">
+                <input type="number"
+                       name="min_price"
+                       value="{{ request('min_price') }}"
+                       placeholder="Min"
+                       min="0"
+                       step="0.01"
+                       class="input flex-1">
+                <span class="self-center text-gray-400">-</span>
+                <input type="number"
+                       name="max_price"
+                       value="{{ request('max_price') }}"
+                       placeholder="Max"
+                       min="0"
+                       step="0.01"
+                       class="input flex-1">
+            </div>
         </div>
 
         <!-- Search -->

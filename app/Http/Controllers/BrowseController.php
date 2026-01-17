@@ -58,8 +58,36 @@ class BrowseController extends Controller
             });
         }
 
+        // Filter by price range
+        if ($request->filled('min_price') || $request->filled('max_price')) {
+            $minPrice = max(0, (float) $request->input('min_price', 0));
+            $maxPrice = $request->filled('max_price') ? max(0, (float) $request->max_price) : null;
+
+            if ($maxPrice !== null) {
+                $query->whereBetween('price', [$minPrice, $maxPrice]);
+            } else {
+                $query->where('price', '>=', $minPrice);
+            }
+        }
+
+        // Sort results
+        $sortOptions = [
+            'newest' => ['created_at', 'desc'],
+            'oldest' => ['created_at', 'asc'],
+            'price_high' => ['price', 'desc'],
+            'price_low' => ['price', 'asc'],
+        ];
+
+        $sort = $request->input('sort', 'newest');
+        if (isset($sortOptions[$sort])) {
+            [$column, $direction] = $sortOptions[$sort];
+            $query->orderBy($column, $direction);
+        } else {
+            $query->latest();
+        }
+
         // Get results with pagination
-        $notes = $query->latest()->paginate(12);
+        $notes = $query->paginate(12);
 
         return view('materials.index', compact('notes', 'schools', 'levels', 'modules'));
     }

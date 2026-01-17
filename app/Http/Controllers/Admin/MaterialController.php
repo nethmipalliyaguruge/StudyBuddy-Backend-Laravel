@@ -29,19 +29,20 @@ class MaterialController extends Controller
     public function destroy(Note $note)
     {
         if ($note->hasPurchases()) {
-            // Do NOT delete, preserve history
-            $note->update([
-                'status' => 'pending',
-            ]);
+            $note->update(['status' => 'disabled']);
 
-            return back()->with(
-                'success',
-                'Material has purchases. It was disabled instead of deleted.'
-            );
+            return back()->with('success', 'Material disabled (has purchases).');
         }
 
         $note->delete();
 
         return back()->with('success', 'Material deleted successfully');
+    }
+
+    public function enable(Note $note)
+    {
+        $note->update(['status' => 'approved']);
+
+        return back()->with('success', 'Material enabled successfully');
     }
 }

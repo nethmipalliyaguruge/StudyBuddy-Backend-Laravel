@@ -20,7 +20,6 @@ class Note extends Model implements HasMedia
     ];
 
     protected $casts = [
-        'status' => 'boolean',
         'price' => 'decimal:2',
     ];
 
@@ -36,7 +35,7 @@ class Note extends Model implements HasMedia
 
     public function isApproved(): bool
     {
-        return $this->getRawOriginal('status') === 'approved';
+        return $this->status === 'approved';
     }
 
 

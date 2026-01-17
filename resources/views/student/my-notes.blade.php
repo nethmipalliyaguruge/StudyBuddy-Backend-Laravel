@@ -102,14 +102,25 @@
                         <i class="fas fa-eye mr-1"></i>View Public Page
                     </a>
 
-                    <form method="POST" action="{{ route('notes.destroy', $note) }}"
-                          onsubmit="return confirm('Are you sure you want to delete this note?')">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="text-sm text-red-600 hover:text-red-700">
-                            <i class="fas fa-trash mr-1"></i>Delete
-                        </button>
-                    </form>
+                    <div class="flex items-center gap-3">
+                        @if($note->status === 'disabled')
+                            <form method="POST" action="{{ route('notes.restore', $note) }}">
+                                @csrf
+                                <button type="submit" class="text-sm text-green-600 hover:text-green-700">
+                                    <i class="fas fa-undo mr-1"></i>Restore
+                                </button>
+                            </form>
+                        @endif
+
+                        <form method="POST" action="{{ route('notes.destroy', $note) }}"
+                              onsubmit="return confirm('{{ $note->purchases->count() > 0 ? 'This note has buyers. It will be disabled instead of deleted. Continue?' : 'Are you sure you want to delete this note?' }}')">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="text-sm text-red-600 hover:text-red-700">
+                                <i class="fas fa-trash mr-1"></i>{{ $note->purchases->count() > 0 ? 'Disable' : 'Delete' }}
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
         @empty

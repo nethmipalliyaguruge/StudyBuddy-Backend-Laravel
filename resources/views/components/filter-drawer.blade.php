@@ -1,4 +1,4 @@
-@props(['schools', 'levels' => collect(), 'modules' => collect(), 'selectedSchool' => null, 'selectedLevel' => null, 'selectedModule' => null])
+@props(['schools', 'levels' => collect(), 'modules' => collect(), 'selectedSchool' => null, 'selectedLevel' => null, 'selectedModule' => null, 'minPrice' => null, 'maxPrice' => null])
 
 <!-- Mobile Filter Drawer -->
 <div x-data="{ open: false }" class="lg:hidden">
@@ -6,7 +6,7 @@
     <button @click="open = true"
             class="btn-outline w-full mb-4">
         <i class="fas fa-filter mr-2"></i>Filters
-        @if($selectedSchool || $selectedLevel || $selectedModule)
+        @if($selectedSchool || $selectedLevel || $selectedModule || request('min_price') || request('max_price'))
             <span class="ml-2 badge-primary">Active</span>
         @endif
     </button>
@@ -86,6 +86,28 @@
                 </select>
             </div>
 
+            <!-- Price Range Filter -->
+            <div class="space-y-2">
+                <label class="form-label">Price Range (LKR)</label>
+                <div class="flex gap-2">
+                    <input type="number"
+                           name="min_price"
+                           value="{{ request('min_price') }}"
+                           placeholder="Min"
+                           min="0"
+                           step="0.01"
+                           class="input flex-1">
+                    <span class="self-center text-gray-400">-</span>
+                    <input type="number"
+                           name="max_price"
+                           value="{{ request('max_price') }}"
+                           placeholder="Max"
+                           min="0"
+                           step="0.01"
+                           class="input flex-1">
+                </div>
+            </div>
+
             <!-- Search -->
             <div class="space-y-2">
                 <label class="form-label">Search</label>
@@ -98,7 +120,7 @@
 
             <!-- Actions -->
             <div class="flex gap-2 pt-4">
-                @if($selectedSchool || $selectedLevel || $selectedModule || request('search'))
+                @if($selectedSchool || $selectedLevel || $selectedModule || request('search') || request('min_price') || request('max_price'))
                     <a href="{{ route('materials.index') }}" class="btn-ghost flex-1">
                         Clear
                     </a>
