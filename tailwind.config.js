@@ -13,8 +13,20 @@ export default {
 
     theme: {
         extend: {
+            colors: {
+                primary: '#006644',
+                'primary-foreground': '#ffffff',
+                secondary: '#f0f9f5',
+                'secondary-foreground': '#006644',
+                accent: '#4ade80',
+                muted: '#f1f5f9',
+                'muted-foreground': '#64748b',
+                border: '#e2e8f0',
+                input: '#e2e8f0',
+                ring: '#006644',
+            },
             fontFamily: {
-                sans: ['Figtree', ...defaultTheme.fontFamily.sans],
+                sans: ['Inter', ...defaultTheme.fontFamily.sans],
             },
         },
     },

@@ -31,8 +31,9 @@ class NoteController extends Controller
             'title'       => 'required|string|max:255',
             'description' => 'required|string',
             'price'       => 'required|numeric|min:0',
-            'note_file' => 'required|file|max:51200', // 50MB
-            'previews.*'  => 'nullable|image|max:20480', // 20MB
+            'note_file'   => 'required|file|max:51200', // 50MB
+            'previews'    => 'required|array|min:1|max:3',
+            'previews.*'  => 'image|max:20480', // 20MB per image
         ]);
 
         $note = Note::create([

@@ -32,7 +32,7 @@
                     <!-- Logo & Main Nav -->
                     <div class="flex items-center">
                         <!-- Logo -->
-                        <a href="{{ url('/') }}" class="flex items-center gap-2">
+                        <a href="{{ route('dashboard') }}" class="flex items-center gap-2">
                             <div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
                                 <i class="fas fa-book-open text-white"></i>
                             </div>

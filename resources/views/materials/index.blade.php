@@ -1,59 +1,96 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl">Study Materials</h2>
-    </x-slot>
+@php
+    $isGuest = !auth()->check();
+    $layout = $isGuest ? 'layouts.landing' : 'layouts.app';
+@endphp
 
-    <div class="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+<x-dynamic-component :component="$layout">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="section-title">Study Materials</h1>
+            <p class="section-subtitle">Browse and discover quality notes from fellow students</p>
+        </div>
 
-        @forelse($notes as $note)
-            <div class="border rounded p-4 space-y-3">
+        <div class="flex flex-col lg:flex-row gap-8">
+            <!-- Mobile Filter Drawer -->
+            <x-filter-drawer
+                :schools="$schools ?? collect()"
+                :levels="$levels ?? collect()"
+                :modules="$modules ?? collect()"
+                :selectedSchool="request('school')"
+                :selectedLevel="request('level')"
+                :selectedModule="request('module')" />
 
-                {{-- Preview Image --}}
-                @if($note->getMedia('previews')->first())
-                    <img src="{{ $note->getMedia('previews')->first()->getUrl() }}"
-                         class="w-full h-40 object-cover rounded">
-                @endif
+            <!-- Desktop Sidebar -->
+            <div class="hidden lg:block w-72 flex-shrink-0">
+                <x-filter-sidebar
+                    :schools="$schools ?? collect()"
+                    :levels="$levels ?? collect()"
+                    :modules="$modules ?? collect()"
+                    :selectedSchool="request('school')"
+                    :selectedLevel="request('level')"
+                    :selectedModule="request('module')"
+                    class="sticky top-24" />
+            </div>
 
-                {{-- Title --}}
-                <h3 class="font-bold text-lg">
-                    {{ $note->title }}
-                </h3>
-
-                {{-- Seller --}}
-                <p class="text-sm text-gray-600">
-                    Seller: {{ $note->user->name }}
-                </p>
-
-                {{-- Price --}}
-                <p class="text-lg font-semibold">
-                    LKR {{ number_format($note->price, 2) }}
-                </p>
-
-                {{-- Actions --}}
-                <div class="flex gap-2">
-
-                    <a href="{{ route('materials.show', $note) }}"
-                       class="border px-3 py-1 rounded text-sm">
-                        View
-                    </a>
+            <!-- Main Content -->
+            <div class="flex-grow">
+                <!-- Results Header -->
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                    <p class="text-gray-600">
+                        Showing <span class="font-semibold text-gray-900">{{ $notes->count() }}</span> results
+                        @if(request('search'))
+                            for "<span class="font-semibold text-gray-900">{{ request('search') }}</span>"
+                        @endif
+                    </p>
 
                     @auth
-                        <button class="bg-blue-600 text-white px-3 py-1 rounded text-sm">
-                            Buy
-                        </button>
-                    @else
-                        <a href="{{ route('login') }}"
-                           class="bg-blue-600 text-white px-3 py-1 rounded text-sm">
-                            Login to Buy
+                        <a href="{{ route('notes.create') }}" class="btn-primary btn-sm">
+                            <i class="fas fa-plus mr-2"></i>Upload Note
                         </a>
                     @endauth
-
                 </div>
 
-            </div>
-        @empty
-            <p>No materials available.</p>
-        @endforelse
+                <!-- Materials Grid -->
+                @if($notes->count() > 0)
+                    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+                        @foreach($notes as $note)
+                            <x-material-card :note="$note" />
+                        @endforeach
+                    </div>
 
+                    <!-- Pagination -->
+                    @if($notes->hasPages())
+                        <div class="mt-8">
+                            {{ $notes->withQueryString()->links() }}
+                        </div>
+                    @endif
+                @else
+                    <!-- Empty State -->
+                    <div class="text-center py-16 bg-white rounded-xl border border-gray-100">
+                        <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-book-open text-3xl text-gray-400"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">No materials found</h3>
+                        <p class="text-gray-600 mb-6">
+                            @if(request()->hasAny(['school', 'level', 'module', 'search']))
+                                Try adjusting your filters or search terms.
+                            @else
+                                Be the first to share study materials!
+                            @endif
+                        </p>
+                        @auth
+                            <a href="{{ route('notes.create') }}" class="btn-primary">
+                                <i class="fas fa-upload mr-2"></i>Upload Your Notes
+                            </a>
+                        @else
+                            <a href="{{ route('register') }}" class="btn-primary">
+                                <i class="fas fa-user-plus mr-2"></i>Join to Upload
+                            </a>
+                        @endauth
+                    </div>
+                @endif
+            </div>
+        </div>
     </div>
-</x-app-layout>
+</x-dynamic-component>

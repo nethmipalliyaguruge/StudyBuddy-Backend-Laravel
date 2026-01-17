@@ -15,9 +15,8 @@ use App\Http\Controllers\BrowseController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-//    return view('welcome');
-    return redirect()->route('materials.index');
-});
+    return view('welcome');
+})->name('home');
 
 Route::middleware([
     'auth:sanctum',
@@ -89,8 +88,11 @@ Route::middleware(['auth', 'blocked', 'admin'])
 
 Route::middleware(['auth', 'blocked'])->group(function () {
 
-    Route::post('/cart/add/{note}', [CartController::class, 'add'])
-        ->name('cart.add');
+    // Cart routes
+    Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+    Route::post('/cart/add/{note}', [CartController::class, 'add'])->name('cart.add');
+    Route::post('/cart/remove/{note}', [CartController::class, 'remove'])->name('cart.remove');
+    Route::post('/cart/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
 
     Route::post('/purchase', [PurchaseController::class, 'store'])
         ->name('purchase.store');

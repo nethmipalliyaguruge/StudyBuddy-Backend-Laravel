@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run build:*)",
+      "Bash(php artisan route:list:*)",
+      "Bash(findstr:*)",
+      "Bash(copy \"D:\\\\Laravel Projects\\\\StudyBuddy-backend-laravel\\\\resources\\\\views\\\\layouts\\\\admin.blade.php\" \"D:\\\\Laravel Projects\\\\StudyBuddy-backend-laravel\\\\resources\\\\views\\\\components\\\\layouts\\\\admin.blade.php\")",
+      "Bash(php artisan:*)"
+    ]
+  }
+}
