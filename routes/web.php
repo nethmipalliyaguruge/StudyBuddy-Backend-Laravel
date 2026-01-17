@@ -94,6 +94,10 @@ Route::middleware(['auth', 'blocked'])->group(function () {
 
     Route::post('/purchase', [PurchaseController::class, 'store'])
         ->name('purchase.store');
+
+    Route::get('/my-purchases', [PurchaseController::class, 'index'])
+        ->name('purchases.index');
+
     Route::get('/upload-note', [NoteController::class, 'create'])->name('notes.create');
 
     Route::get('/my-notes', [NoteController::class, 'myNotes'])

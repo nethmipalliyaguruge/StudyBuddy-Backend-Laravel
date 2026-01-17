@@ -23,9 +23,19 @@
 
         {{-- Buy --}}
         @auth
-            <button class="bg-blue-600 text-white px-6 py-2 rounded">
-                Buy Now
-            </button>
+            @if(auth()->user()->purchases()->where('note_id', $note->id)->exists())
+                <span class="text-green-600 font-semibold">
+            Already Purchased
+        </span>
+            @else
+                <form method="POST" action="{{ route('purchase.store') }}">
+                    @csrf
+                    <input type="hidden" name="note_id" value="{{ $note->id }}">
+                    <button class="bg-blue-600 text-white px-6 py-2 rounded">
+                        Buy Now
+                    </button>
+                </form>
+            @endif
         @else
             <a href="{{ route('login') }}"
                class="bg-blue-600 text-white px-6 py-2 rounded">
