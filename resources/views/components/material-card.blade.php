@@ -62,7 +62,7 @@
                     @auth
                         @if(auth()->user()->purchases()->where('note_id', $note->id)->exists())
                             <span class="btn-sm badge-success">
-                                <i class="fas fa-check mr-1"></i> Owned
+                                <i class="fas fa-check mr-1"></i> Purchased
                             </span>
                         @elseif(auth()->id() !== $note->user_id)
                             <form method="POST" action="{{ route('cart.add', $note) }}" class="inline">
