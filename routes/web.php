@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Student\NoteController;
 use App\Http\Controllers\Student\PurchaseController;
 use App\Http\Controllers\Student\CartController;
+use App\Http\Controllers\Student\StripeController;
 
 use App\Http\Controllers\BrowseController;
 use Illuminate\Support\Facades\Route;
@@ -95,6 +96,11 @@ Route::middleware(['auth', 'blocked'])->group(function () {
     Route::post('/cart/add/{note}', [CartController::class, 'add'])->name('cart.add');
     Route::post('/cart/remove/{note}', [CartController::class, 'remove'])->name('cart.remove');
     Route::post('/cart/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
+
+    // Stripe payment routes
+    Route::post('/checkout/stripe', [StripeController::class, 'checkout'])->name('stripe.checkout');
+    Route::get('/checkout/success', [StripeController::class, 'success'])->name('stripe.success');
+    Route::get('/checkout/cancel', [StripeController::class, 'cancel'])->name('stripe.cancel');
 
     Route::post('/purchase', [PurchaseController::class, 'store'])
         ->name('purchase.store');

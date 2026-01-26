@@ -12,11 +12,16 @@ class Purchase extends Model
         'price',
         'commission',
         'status',
+        'stripe_session_id',
+        'stripe_payment_intent_id',
+        'payment_method',
+        'paid_at',
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
         'commission' => 'decimal:2',
+        'paid_at' => 'datetime',
     ];
 
     public function user()

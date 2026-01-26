@@ -28,7 +28,7 @@ class CartController extends Controller
         }
 
         // Check if already purchased
-        if (auth()->user()->purchases()->where('note_id', $note->id)->exists()) {
+        if (auth()->user()->purchases()->where('note_id', $note->id)->where('status', 'completed')->exists()) {
             return back()->with('error', 'You have already purchased this note.');
         }
 
@@ -79,7 +79,7 @@ class CartController extends Controller
 
         foreach ($notes as $note) {
             // Skip if already purchased or own note
-            if (auth()->user()->purchases()->where('note_id', $note->id)->exists()) {
+            if (auth()->user()->purchases()->where('note_id', $note->id)->where('status', 'completed')->exists()) {
                 continue;
             }
 

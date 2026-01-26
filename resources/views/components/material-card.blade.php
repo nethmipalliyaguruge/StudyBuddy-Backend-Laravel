@@ -60,7 +60,7 @@
                     </a>
 
                     @auth
-                        @if(auth()->user()->purchases()->where('note_id', $note->id)->exists())
+                        @if(auth()->user()->purchases()->where('note_id', $note->id)->where('status', 'completed')->exists())
                             <span class="btn-sm badge-success">
                                 <i class="fas fa-check mr-1"></i> Purchased
                             </span>

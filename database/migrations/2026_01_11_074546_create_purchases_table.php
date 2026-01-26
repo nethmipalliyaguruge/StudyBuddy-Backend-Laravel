@@ -18,6 +18,10 @@ return new class extends Migration
             $table->decimal('price', 8, 2)->default(0);
             $table->decimal('commission', 8, 2)->default(0);
             $table->enum('status', ['pending', 'completed', 'failed'])->default('pending');
+            $table->string('stripe_session_id')->nullable();
+            $table->string('stripe_payment_intent_id')->nullable();
+            $table->string('payment_method')->default('stripe');
+            $table->timestamp('paid_at')->nullable();
             $table->timestamps();
         });
     }

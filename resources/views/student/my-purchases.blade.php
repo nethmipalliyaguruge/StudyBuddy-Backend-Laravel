@@ -40,20 +40,34 @@
                                         </p>
                                     @endif
                                 </div>
-                                <span class="badge-success flex-shrink-0">
-                                    <i class="fas fa-check-circle mr-1"></i>Purchased
-                                </span>
+                                @if($purchase->status === 'completed')
+                                    <span class="badge-success flex-shrink-0">
+                                        <i class="fas fa-check-circle mr-1"></i>Paid
+                                    </span>
+                                @elseif($purchase->status === 'pending')
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 flex-shrink-0">
+                                        <i class="fas fa-clock mr-1"></i>Pending
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 flex-shrink-0">
+                                        <i class="fas fa-times-circle mr-1"></i>Failed
+                                    </span>
+                                @endif
                             </div>
 
                             <!-- Meta -->
                             <div class="flex flex-wrap items-center gap-4 mt-3 text-sm text-gray-500">
                                 <span><i class="fas fa-tag mr-1"></i>LKR {{ number_format($purchase->price, 2) }}</span>
-                                <span><i class="fas fa-calendar mr-1"></i>{{ $purchase->created_at->format('M d, Y') }}</span>
+                                @if($purchase->paid_at)
+                                    <span><i class="fas fa-calendar-check mr-1"></i>Paid {{ $purchase->paid_at->format('M d, Y') }}</span>
+                                @else
+                                    <span><i class="fas fa-calendar mr-1"></i>{{ $purchase->created_at->format('M d, Y') }}</span>
+                                @endif
                             </div>
 
                             <!-- Actions -->
                             <div class="mt-4 flex flex-wrap gap-3">
-                                @if($purchase->note)
+                                @if($purchase->status === 'completed' && $purchase->note)
                                     @php
                                         $noteFile = $purchase->note->getFirstMedia('note_file');
                                     @endphp
@@ -69,7 +83,17 @@
                                        class="btn-secondary btn-sm">
                                         <i class="fas fa-eye mr-2"></i>View Details
                                     </a>
-                                @else
+                                @elseif($purchase->status === 'pending')
+                                    <span class="text-sm text-yellow-600 italic">
+                                        <i class="fas fa-hourglass-half mr-1"></i>
+                                        Payment pending - download available after payment completes
+                                    </span>
+                                @elseif($purchase->status === 'failed')
+                                    <span class="text-sm text-red-600 italic">
+                                        <i class="fas fa-exclamation-circle mr-1"></i>
+                                        Payment failed - please try again
+                                    </span>
+                                @elseif(!$purchase->note)
                                     <span class="text-sm text-gray-500 italic">
                                         <i class="fas fa-exclamation-triangle mr-1"></i>
                                         This note is no longer available for download
