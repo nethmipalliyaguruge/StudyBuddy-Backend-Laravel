@@ -1,0 +1,788 @@
+{
+  "info": {
+    "name": "StudyBuddy API",
+    "description": "API collection for StudyBuddy Laravel backend",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000/api"
+    },
+    {
+      "key": "token",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Test User\",\n    \"email\": \"test@example.com\",\n    \"phone\": \"0771234567\",\n    \"password\": \"password123\",\n    \"password_confirmation\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/register",
+              "host": ["{{base_url}}"],
+              "path": ["register"]
+            },
+            "description": "Register a new user and get authentication token"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('token', jsonData.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"test@example.com\",\n    \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/login",
+              "host": ["{{base_url}}"],
+              "path": ["login"]
+            },
+            "description": "Login and get authentication token"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('token', jsonData.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get User",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/user",
+              "host": ["{{base_url}}"],
+              "path": ["user"]
+            },
+            "description": "Get authenticated user details"
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/logout",
+              "host": ["{{base_url}}"],
+              "path": ["logout"]
+            },
+            "description": "Logout (revoke current token)"
+          }
+        },
+        {
+          "name": "Logout All Devices",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/logout-all",
+              "host": ["{{base_url}}"],
+              "path": ["logout-all"]
+            },
+            "description": "Logout from all devices (revoke all tokens)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Schools",
+      "item": [
+        {
+          "name": "List Schools",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/schools",
+              "host": ["{{base_url}}"],
+              "path": ["schools"]
+            },
+            "description": "Get all schools"
+          }
+        },
+        {
+          "name": "Get School",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/schools/1",
+              "host": ["{{base_url}}"],
+              "path": ["schools", "1"]
+            },
+            "description": "Get a specific school with its levels"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Levels",
+      "item": [
+        {
+          "name": "List Levels",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/levels",
+              "host": ["{{base_url}}"],
+              "path": ["levels"]
+            },
+            "description": "Get all levels"
+          }
+        },
+        {
+          "name": "List Levels by School",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/levels?school_id=1",
+              "host": ["{{base_url}}"],
+              "path": ["levels"],
+              "query": [
+                {
+                  "key": "school_id",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Get levels filtered by school"
+          }
+        },
+        {
+          "name": "Get Level",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/levels/1",
+              "host": ["{{base_url}}"],
+              "path": ["levels", "1"]
+            },
+            "description": "Get a specific level with its modules"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Modules",
+      "item": [
+        {
+          "name": "List Modules",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/modules",
+              "host": ["{{base_url}}"],
+              "path": ["modules"]
+            },
+            "description": "Get all active modules"
+          }
+        },
+        {
+          "name": "List Modules by Level",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/modules?level_id=1",
+              "host": ["{{base_url}}"],
+              "path": ["modules"],
+              "query": [
+                {
+                  "key": "level_id",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Get modules filtered by level"
+          }
+        },
+        {
+          "name": "Get Module",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/modules/1",
+              "host": ["{{base_url}}"],
+              "path": ["modules", "1"]
+            },
+            "description": "Get a specific module"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Materials",
+      "item": [
+        {
+          "name": "List Materials",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/materials",
+              "host": ["{{base_url}}"],
+              "path": ["materials"]
+            },
+            "description": "Get all approved materials with pagination"
+          }
+        },
+        {
+          "name": "List Materials with Filters",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/materials?school_id=1&level_id=1&module_id=1&search=test&min_price=0&max_price=1000&sort=newest&per_page=15",
+              "host": ["{{base_url}}"],
+              "path": ["materials"],
+              "query": [
+                {
+                  "key": "school_id",
+                  "value": "1"
+                },
+                {
+                  "key": "level_id",
+                  "value": "1"
+                },
+                {
+                  "key": "module_id",
+                  "value": "1"
+                },
+                {
+                  "key": "search",
+                  "value": "test"
+                },
+                {
+                  "key": "min_price",
+                  "value": "0"
+                },
+                {
+                  "key": "max_price",
+                  "value": "1000"
+                },
+                {
+                  "key": "sort",
+                  "value": "newest",
+                  "description": "Options: newest, oldest, price_low, price_high"
+                },
+                {
+                  "key": "per_page",
+                  "value": "15"
+                }
+              ]
+            },
+            "description": "Get materials with all available filters"
+          }
+        },
+        {
+          "name": "Get Material",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/materials/1",
+              "host": ["{{base_url}}"],
+              "path": ["materials", "1"]
+            },
+            "description": "Get a specific material details"
+          }
+        }
+      ]
+    },
+    {
+      "name": "My Notes",
+      "item": [
+        {
+          "name": "List My Notes",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/my-notes",
+              "host": ["{{base_url}}"],
+              "path": ["my-notes"]
+            },
+            "description": "Get all notes uploaded by the authenticated user"
+          }
+        },
+        {
+          "name": "List My Notes by Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/my-notes?status=pending",
+              "host": ["{{base_url}}"],
+              "path": ["my-notes"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "pending",
+                  "description": "Options: pending, approved, disabled"
+                }
+              ]
+            },
+            "description": "Get user's notes filtered by status"
+          }
+        },
+        {
+          "name": "Upload Note",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "module_id",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "title",
+                  "value": "Sample Note Title",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "This is a sample note description with detailed information about the content.",
+                  "type": "text"
+                },
+                {
+                  "key": "price",
+                  "value": "500.00",
+                  "type": "text"
+                },
+                {
+                  "key": "note_file",
+                  "type": "file",
+                  "description": "PDF, DOC, DOCX, PPT, PPTX (max 50MB)"
+                },
+                {
+                  "key": "previews[]",
+                  "type": "file",
+                  "description": "Preview images JPG, PNG (max 3 files, 20MB each)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/notes",
+              "host": ["{{base_url}}"],
+              "path": ["notes"]
+            },
+            "description": "Upload a new note (requires file upload)"
+          }
+        },
+        {
+          "name": "Update Note",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"title\": \"Updated Note Title\",\n    \"description\": \"Updated description\",\n    \"price\": 600.00\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/notes/1",
+              "host": ["{{base_url}}"],
+              "path": ["notes", "1"]
+            },
+            "description": "Update an existing note (only owner can update)"
+          }
+        },
+        {
+          "name": "Delete Note",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/notes/1",
+              "host": ["{{base_url}}"],
+              "path": ["notes", "1"]
+            },
+            "description": "Delete a note (only owner can delete, cannot delete if purchased)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Purchases",
+      "item": [
+        {
+          "name": "List My Purchases",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/my-purchases",
+              "host": ["{{base_url}}"],
+              "path": ["my-purchases"]
+            },
+            "description": "Get all completed purchases for the authenticated user"
+          }
+        },
+        {
+          "name": "Get Purchase",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/purchases/1",
+              "host": ["{{base_url}}"],
+              "path": ["purchases", "1"]
+            },
+            "description": "Get details of a specific purchase"
+          }
+        },
+        {
+          "name": "Download Purchased Note",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/purchases/1/download",
+              "host": ["{{base_url}}"],
+              "path": ["purchases", "1", "download"]
+            },
+            "description": "Get download URL for a purchased note (temporary URL, 30 min expiry)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cart & Checkout",
+      "item": [
+        {
+          "name": "Get Cart Items",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"cart_ids\": [1, 2, 3]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/cart",
+              "host": ["{{base_url}}"],
+              "path": ["cart"]
+            },
+            "description": "Validate and get details of cart items"
+          }
+        },
+        {
+          "name": "Validate Cart Item",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/cart/validate/1",
+              "host": ["{{base_url}}"],
+              "path": ["cart", "validate", "1"]
+            },
+            "description": "Check if a note can be added to cart (not owned, not purchased, approved)"
+          }
+        },
+        {
+          "name": "Checkout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"cart_ids\": [1, 2],\n    \"success_url\": \"https://yourapp.com/checkout/success\",\n    \"cancel_url\": \"https://yourapp.com/checkout/cancel\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/checkout",
+              "host": ["{{base_url}}"],
+              "path": ["checkout"]
+            },
+            "description": "Create Stripe checkout session and get redirect URL"
+          }
+        },
+        {
+          "name": "Verify Checkout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"session_id\": \"cs_test_xxxxx\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/checkout/verify",
+              "host": ["{{base_url}}"],
+              "path": ["checkout", "verify"]
+            },
+            "description": "Verify payment completion after Stripe redirect"
+          }
+        }
+      ]
+    }
+  ]
+}
