@@ -88,18 +88,18 @@
                             <i class="fas fa-arrow-left mr-2"></i>Continue Shopping
                         </a>
 
-                        <!-- Test Mode Instructions -->
-                        @if(str_starts_with(config('services.stripe.key'), 'pk_test'))
-                            <div class="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                                <p class="text-xs font-semibold text-yellow-800 mb-1">
-                                    <i class="fas fa-flask mr-1"></i>Test Mode
-                                </p>
-                                <p class="text-xs text-yellow-700">
-                                    Use card: <code class="bg-yellow-100 px-1 rounded">4242 4242 4242 4242</code><br>
-                                    Any future expiry, any 3-digit CVC
-                                </p>
-                            </div>
-                        @endif
+{{--                        <!-- Test Mode Instructions -->--}}
+{{--                        @if(str_starts_with(config('services.stripe.key'), 'pk_test'))--}}
+{{--                            <div class="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">--}}
+{{--                                <p class="text-xs font-semibold text-yellow-800 mb-1">--}}
+{{--                                    <i class="fas fa-flask mr-1"></i>Test Mode--}}
+{{--                                </p>--}}
+{{--                                <p class="text-xs text-yellow-700">--}}
+{{--                                    Use card: <code class="bg-yellow-100 px-1 rounded">4242 4242 4242 4242</code><br>--}}
+{{--                                    Any future expiry, any 3-digit CVC--}}
+{{--                                </p>--}}
+{{--                            </div>--}}
+{{--                        @endif--}}
                     </div>
                 </div>
             </div>
