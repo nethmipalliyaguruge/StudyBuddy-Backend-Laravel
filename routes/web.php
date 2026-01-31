@@ -1,12 +1,6 @@
 <?php
 
 use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\SchoolController as AdminSchoolController;
-use App\Http\Controllers\Admin\LevelController;
-use App\Http\Controllers\Admin\ModuleController;
-use App\Http\Controllers\Admin\MaterialController as AdminMaterialController;
-use App\Http\Controllers\Admin\UserController as AdminUserController;
-
 use App\Http\Controllers\Student\NoteController;
 use App\Http\Controllers\Student\PurchaseController;
 use App\Http\Controllers\Student\CartController;
@@ -40,46 +34,8 @@ Route::middleware(['auth', 'blocked', 'admin'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
-
         Route::get('/dashboard', [DashboardController::class, 'index'])
             ->name('dashboard');
-
-        Route::post('/schools', [AdminSchoolController::class, 'store'])
-            ->name('schools.store');
-        Route::put('/schools/{school}', [AdminSchoolController::class, 'update'])
-            ->name('schools.update');
-        Route::delete('/schools/{school}', [AdminSchoolController::class, 'destroy'])
-            ->name('schools.destroy');
-
-        Route::post('/levels', [LevelController::class, 'store'])
-            ->name('levels.store');
-        Route::put('/levels/{level}', [LevelController::class, 'update'])
-            ->name('levels.update');
-        Route::delete('/levels/{level}', [LevelController::class, 'destroy'])
-            ->name('levels.destroy');
-
-        Route::post('/modules', [ModuleController::class, 'store'])
-            ->name('modules.store');
-        Route::put('/modules/{module}', [ModuleController::class, 'update'])
-            ->name('modules.update');
-        Route::delete('/modules/{module}', [ModuleController::class, 'destroy'])
-            ->name('modules.destroy');
-
-        Route::post('/materials/{note}/approve', [AdminMaterialController::class, 'approve'])
-            ->name('materials.approve');
-        Route::post('/materials/{note}/pending', [AdminMaterialController::class, 'pending'])
-            ->name('materials.pending');
-        Route::post('/materials/{note}/enable', [AdminMaterialController::class, 'enable'])
-            ->name('materials.enable');
-        Route::delete('/materials/{note}', [AdminMaterialController::class, 'destroy'])
-            ->name('materials.destroy');
-
-        Route::post('/users/{user}/role', [AdminUserController::class, 'updateRole'])
-            ->name('users.role');
-        Route::post('/users/{user}/block', [AdminUserController::class, 'block'])
-            ->name('users.block');
-        Route::post('/users/{user}/unblock', [AdminUserController::class, 'unblock'])
-            ->name('users.unblock');
     });
 
 /*
