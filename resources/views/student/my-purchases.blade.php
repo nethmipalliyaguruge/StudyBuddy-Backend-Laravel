@@ -72,8 +72,7 @@
                                         $noteFile = $purchase->note->getFirstMedia('note_file');
                                     @endphp
                                     @if($noteFile)
-                                        <a href="{{ $noteFile->getUrl() }}"
-                                           target="_blank"
+                                        <a href="{{ route('purchases.download', $purchase) }}"
                                            class="btn-primary btn-sm">
                                             <i class="fas fa-download mr-2"></i>Download Note
                                         </a>

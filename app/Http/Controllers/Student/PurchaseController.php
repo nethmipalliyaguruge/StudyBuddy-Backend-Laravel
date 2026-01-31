@@ -56,4 +56,31 @@ class PurchaseController extends Controller
 
         return view('student.my-purchases', compact('purchases'));
     }
+
+    public function download(Purchase $purchase)
+    {
+        // Ensure user owns this purchase
+        if ($purchase->user_id !== auth()->id()) {
+            abort(403, 'You can only download your own purchases.');
+        }
+
+        // Ensure purchase is completed
+        if ($purchase->status !== 'completed') {
+            return back()->with('error', 'This purchase is not completed.');
+        }
+
+        // Get the note file
+        $noteFile = $purchase->note->getFirstMedia('note_file');
+
+        if (!$noteFile) {
+            return back()->with('error', 'No file available for download.');
+        }
+
+        // Force download with proper headers
+        return response()->download(
+            $noteFile->getPath(),
+            $noteFile->file_name,
+            ['Content-Type' => $noteFile->mime_type]
+        );
+    }
 }

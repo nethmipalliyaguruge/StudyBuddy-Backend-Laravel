@@ -123,6 +123,9 @@ Route::middleware(['auth', 'blocked'])->group(function () {
 
     Route::get('/my-purchases', [PurchaseController::class, 'index'])
         ->name('purchases.index');
+
+    Route::get('/purchases/{purchase}/download', [PurchaseController::class, 'download'])
+        ->name('purchases.download');
 });
 
 /*
