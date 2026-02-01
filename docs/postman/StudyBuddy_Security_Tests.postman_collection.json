@@ -1,0 +1,989 @@
+{
+	"info": {
+		"_postman_id": "security-demo-collection",
+		"name": "StudyBuddy Security Demonstration",
+		"description": "Collection demonstrating security measures:\n\n**Testable via API:**\n1. SQL Injection Prevention (200 OK - safe)\n2. Protected Routes - Authentication (401 Unauthenticated)\n3. RBAC - Authorization via IDOR test (403 Forbidden)\n4. Input Validation (422 Unprocessable Entity)\n5. API Authentication - Sanctum tokens (200 OK with token)\n\n**Not testable via API (web-only):**\n- CSRF Protection (uses @csrf in forms)\n- Admin access control (uses session auth)\n- Password hashing (database verification)\n\nRun tests in order - login tests save tokens automatically.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Part 1: Unauthorized Access",
+			"item": [
+				{
+					"name": "0.1 SQL Injection Attempt (Safe - Returns 200)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/materials?search='; DROP TABLE notes; --",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"materials"
+							],
+							"query": [
+								{
+									"key": "search",
+									"value": "'; DROP TABLE notes; --"
+								}
+							]
+						},
+						"description": "**Expected Result:**\n- Status: 200 OK\n- Returns materials array (possibly empty)\n- Notes table is NOT deleted\n\n**Purpose:** Demonstrates SQL injection is safely handled by Eloquent ORM parameterized queries."
+					},
+					"response": [
+						{
+							"name": "Expected 200 Response",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/api/materials?search='; DROP TABLE notes; --",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"materials"
+									],
+									"query": [
+										{
+											"key": "search",
+											"value": "'; DROP TABLE notes; --"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"body": "{\n    \"data\": [],\n    \"meta\": {\n        \"current_page\": 1,\n        \"total\": 0\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "1.1 Access Protected Endpoint Without Token (401)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/user",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"user"
+							]
+						},
+						"description": "**Expected Result:**\n- Status: 401 Unauthorized\n- Response: {\"message\": \"Unauthenticated.\"}\n\n**Purpose:** Demonstrates that protected endpoints require authentication."
+					},
+					"response": [
+						{
+							"name": "Expected 401 Response",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/api/user",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"user"
+									]
+								}
+							},
+							"status": "Unauthorized",
+							"code": 401,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"body": "{\n    \"message\": \"Unauthenticated.\"\n}"
+						}
+					]
+				},
+				{
+					"name": "1.2a Login to Get Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"auth_token\", jsonData.token);",
+									"    pm.environment.set(\"user_id\", jsonData.user.id);",
+									"    console.log(\"Token saved to environment\");",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"test@example.com\",\n    \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"login"
+							]
+						},
+						"description": "**Purpose:** Login to get a valid authentication token.\n\n**Expected Result:**\n- Status: 200 OK\n- Response contains: token, user data\n\n**Note:** The token is automatically saved to environment variable `auth_token`."
+					},
+					"response": []
+				},
+				{
+					"name": "1.2b Access Protected Endpoint With Valid Token (200)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/user",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"user"
+							]
+						},
+						"description": "**Expected Result:**\n- Status: 200 OK\n- Response: User data returned successfully\n\n**Purpose:** Demonstrates that authenticated requests are allowed."
+					},
+					"response": [
+						{
+							"name": "Expected 200 Response",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{auth_token}}"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/api/user",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"user"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"body": "{\n    \"user\": {\n        \"id\": 1,\n        \"name\": \"Test User\",\n        \"email\": \"test@example.com\"\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "1.3 Access Another User's Purchase (403)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/purchases/9999",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"purchases",
+								"9999"
+							]
+						},
+						"description": "**Expected Result:**\n- Status: 403 Forbidden\n- Response: {\"message\": \"You can only view your own purchases.\"}\n\n**Purpose:** Demonstrates RBAC (Role-Based Access Control):\n- User IS authenticated (passes auth:sanctum)\n- User does NOT have permission (fails ownership check)\n- Returns 403 (not 401) because it's an authorization error, not authentication.\n\n**Note:** This is the primary API test for RBAC since admin routes use web sessions.\nReplace 9999 with an actual purchase ID that belongs to a different user."
+					},
+					"response": [
+						{
+							"name": "Expected 403 Response",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/api/purchases/9999",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"purchases",
+										"9999"
+									]
+								}
+							},
+							"status": "Forbidden",
+							"code": 403,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"body": "{\n    \"message\": \"You can only view your own purchases.\"\n}"
+						}
+					]
+				},
+				{
+					"name": "1.4 Access My Notes Without Token (401)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/my-notes",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"my-notes"
+							]
+						},
+						"description": "**Expected Result:**\n- Status: 401 Unauthorized\n- Response: {\"message\": \"Unauthenticated.\"}\n\n**Purpose:** Another example of protected endpoint requiring authentication."
+					},
+					"response": []
+				},
+				{
+					"name": "1.5 Access My Purchases Without Token (401)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/my-purchases",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"my-purchases"
+							]
+						},
+						"description": "**Expected Result:**\n- Status: 401 Unauthorized\n- Response: {\"message\": \"Unauthenticated.\"}\n\n**Purpose:** Demonstrates purchase history is protected."
+					},
+					"response": []
+				}
+			],
+			"description": "Tests demonstrating 401 Unauthorized and 403 Forbidden responses for protected endpoints."
+		},
+		{
+			"name": "Part 2: Input Validation",
+			"item": [
+				{
+					"name": "2.1 Register - Missing Required Fields (422)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"test@example.com\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"register"
+							]
+						},
+						"description": "**Expected Result:**\n- Status: 422 Unprocessable Entity\n- Response shows errors for missing 'name' and 'password' fields\n\n**Purpose:** Demonstrates required field validation."
+					},
+					"response": [
+						{
+							"name": "Expected 422 Response",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"test@example.com\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/register",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"register"
+									]
+								}
+							},
+							"status": "Unprocessable Entity",
+							"code": 422,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"body": "{\n    \"message\": \"The name field is required. (and 1 more error)\",\n    \"errors\": {\n        \"name\": [\"The name field is required.\"],\n        \"password\": [\"The password field is required.\"]\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "2.2 Register - Invalid Email Format (422)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Test User\",\n    \"email\": \"invalid-email\",\n    \"password\": \"password123\",\n    \"password_confirmation\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"register"
+							]
+						},
+						"description": "**Expected Result:**\n- Status: 422 Unprocessable Entity\n- Response shows error for invalid email format\n\n**Purpose:** Demonstrates email format validation."
+					},
+					"response": [
+						{
+							"name": "Expected 422 Response",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"Test User\",\n    \"email\": \"invalid-email\",\n    \"password\": \"password123\",\n    \"password_confirmation\": \"password123\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/register",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"register"
+									]
+								}
+							},
+							"status": "Unprocessable Entity",
+							"code": 422,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"body": "{\n    \"message\": \"The email field must be a valid email address.\",\n    \"errors\": {\n        \"email\": [\"The email field must be a valid email address.\"]\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "2.3 Register - Password Confirmation Mismatch (422)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Test User\",\n    \"email\": \"newuser@example.com\",\n    \"password\": \"password123\",\n    \"password_confirmation\": \"different-password\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"register"
+							]
+						},
+						"description": "**Expected Result:**\n- Status: 422 Unprocessable Entity\n- Response shows password confirmation mismatch error\n\n**Purpose:** Demonstrates password confirmation validation."
+					},
+					"response": [
+						{
+							"name": "Expected 422 Response",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"Test User\",\n    \"email\": \"newuser@example.com\",\n    \"password\": \"password123\",\n    \"password_confirmation\": \"different-password\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/register",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"register"
+									]
+								}
+							},
+							"status": "Unprocessable Entity",
+							"code": 422,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"body": "{\n    \"message\": \"The password field confirmation does not match.\",\n    \"errors\": {\n        \"password\": [\"The password field confirmation does not match.\"]\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "2.4a Register - Create Test User (for duplicate test)",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Generate unique email for this test",
+									"var timestamp = new Date().getTime();",
+									"pm.environment.set(\"test_email\", \"duplicate_test_\" + timestamp + \"@example.com\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Test User\",\n    \"email\": \"{{test_email}}\",\n    \"password\": \"password123\",\n    \"password_confirmation\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"register"
+							]
+						},
+						"description": "**Purpose:** First registration to create a user for duplicate email test.\n\n**Expected Result:**\n- Status: 201 Created\n- User created successfully"
+					},
+					"response": []
+				},
+				{
+					"name": "2.4b Register - Duplicate Email (422)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Another User\",\n    \"email\": \"{{test_email}}\",\n    \"password\": \"password123\",\n    \"password_confirmation\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"register"
+							]
+						},
+						"description": "**Expected Result:**\n- Status: 422 Unprocessable Entity\n- Response shows email already taken error\n\n**Purpose:** Demonstrates unique email validation.\n\n**Note:** Run test 2.4a first to create the duplicate email."
+					},
+					"response": [
+						{
+							"name": "Expected 422 Response",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"Another User\",\n    \"email\": \"existing@example.com\",\n    \"password\": \"password123\",\n    \"password_confirmation\": \"password123\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/register",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"register"
+									]
+								}
+							},
+							"status": "Unprocessable Entity",
+							"code": 422,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"body": "{\n    \"message\": \"The email has already been taken.\",\n    \"errors\": {\n        \"email\": [\"The email has already been taken.\"]\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "2.5 Login - Missing Credentials (422)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"login"
+							]
+						},
+						"description": "**Expected Result:**\n- Status: 422 Unprocessable Entity\n- Response shows errors for missing email and password\n\n**Purpose:** Demonstrates login validation."
+					},
+					"response": [
+						{
+							"name": "Expected 422 Response",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/login",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"login"
+									]
+								}
+							},
+							"status": "Unprocessable Entity",
+							"code": 422,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"body": "{\n    \"message\": \"The email field is required. (and 1 more error)\",\n    \"errors\": {\n        \"email\": [\"The email field is required.\"],\n        \"password\": [\"The password field is required.\"]\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "2.6 Login - Invalid Credentials (422)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"nonexistent@example.com\",\n    \"password\": \"wrongpassword\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"login"
+							]
+						},
+						"description": "**Expected Result:**\n- Status: 422 Unprocessable Entity\n- Response shows incorrect credentials error\n\n**Purpose:** Demonstrates credential validation without revealing which field is wrong."
+					},
+					"response": [
+						{
+							"name": "Expected 422 Response",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"nonexistent@example.com\",\n    \"password\": \"wrongpassword\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/login",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"login"
+									]
+								}
+							},
+							"status": "Unprocessable Entity",
+							"code": 422,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"body": "{\n    \"message\": \"The provided credentials are incorrect.\",\n    \"errors\": {\n        \"email\": [\"The provided credentials are incorrect.\"]\n    }\n}"
+						}
+					]
+				}
+			],
+			"description": "Tests demonstrating 422 Unprocessable Entity responses for input validation errors."
+		},
+		{
+			"name": "Reference: Successful Operations",
+			"item": [
+				{
+					"name": "Register - Successful (201)",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Generate unique email for this test",
+									"var timestamp = new Date().getTime();",
+									"pm.environment.set(\"new_user_email\", \"success_test_\" + timestamp + \"@example.com\");"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"new_user_token\", jsonData.token);",
+									"    console.log(\"New user token saved\");",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"New Test User\",\n    \"email\": \"{{new_user_email}}\",\n    \"password\": \"Password123!\",\n    \"password_confirmation\": \"Password123!\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"register"
+							]
+						},
+						"description": "**Expected Result:**\n- Status: 201 Created\n- Response contains user data and token\n\n**Purpose:** Reference for successful registration."
+					},
+					"response": []
+				},
+				{
+					"name": "Login - Successful (200)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"auth_token\", jsonData.token);",
+									"    console.log(\"Token saved to environment\");",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"test@example.com\",\n    \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"login"
+							]
+						},
+						"description": "**Expected Result:**\n- Status: 200 OK\n- Response contains user data and token\n\n**Purpose:** Reference for successful login."
+					},
+					"response": []
+				},
+				{
+					"name": "Get User - Successful (200)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/user",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"user"
+							]
+						},
+						"description": "**Expected Result:**\n- Status: 200 OK\n- Response contains authenticated user data\n\n**Purpose:** Reference for successful authenticated request."
+					},
+					"response": []
+				}
+			],
+			"description": "Reference requests showing successful operations for comparison."
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		}
+	]
+}
