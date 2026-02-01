@@ -29,7 +29,7 @@ E-learning marketplace backend for buying and selling study materials. Built wit
 
 ```bash
 # Clone the repository
-git clone <repository-url>
+git clone https://github.com/nethmipalliyaguruge/StudyBuddy-Backend-Laravel.git
 cd studybuddy-backend
 
 # Install PHP dependencies
