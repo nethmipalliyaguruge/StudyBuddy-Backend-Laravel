@@ -16,8 +16,19 @@ jobs:
         with:
           php-version: '8.2'
 
-      - name: Install Dependencies
+      - name: Install PHP Dependencies
         run: composer install --no-progress --prefer-dist
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Node Dependencies
+        run: npm ci
+
+      - name: Build Frontend Assets
+        run: npm run build
 
       - name: Run Tests
         run: |
