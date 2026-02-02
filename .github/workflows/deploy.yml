@@ -1,47 +1,47 @@
 name: Test and Deploy
 
-  on:
-    push:
-      branches: [main]
+on:
+  push:
+    branches: [main]
 
-  jobs:
-    test:
-      runs-on: ubuntu-latest
-      steps:
-        - uses: actions/checkout@v4
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
-        - name: Setup PHP
-          uses: shivammathur/setup-php@v2
-          with:
-            php-version: '8.2'
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
 
-        - name: Install Dependencies
-          run: composer install --no-progress --prefer-dist
+      - name: Install Dependencies
+        run: composer install --no-progress --prefer-dist
 
-        - name: Run Tests
-          run: |
-            cp .env.example .env
-            php artisan key:generate
-            php artisan test
+      - name: Run Tests
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+          php artisan test
 
-    deploy:
-      needs: test
-      runs-on: ubuntu-latest
-      if: github.ref == 'refs/heads/main'
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
 
-      steps:
-        - name: Deploy to EC2
-          uses: appleboy/ssh-action@v1.0.0
-          with:
-            host: ${{ secrets.EC2_HOST }}
-            username: ${{ secrets.EC2_USERNAME }}
-            key: ${{ secrets.EC2_SSH_KEY }}
-            script: |
-              cd /var/www/studybuddy
-              git pull origin main
-              composer install --no-dev --optimize-autoloader
-              php artisan migrate --force
-              php artisan config:cache
-              php artisan route:cache
-              php artisan view:cache
-              sudo systemctl reload apache2
+    steps:
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd /var/www/studybuddy
+            git pull origin main
+            composer install --no-dev --optimize-autoloader
+            php artisan migrate --force
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
+            sudo systemctl reload apache2
