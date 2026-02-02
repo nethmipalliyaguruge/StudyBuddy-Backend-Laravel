@@ -41,6 +41,10 @@ Route::get('/modules/{module}', [ModuleController::class, 'show']);
 Route::get('/materials', [MaterialController::class, 'index']);
 Route::get('/materials/{note}', [MaterialController::class, 'show']);
 
+// Material download (public route — auth is handled manually via ?token= query param
+// because Flutter opens this in an external browser which cannot send Bearer headers)
+Route::get('/materials/{note}/download', [MaterialController::class, 'download']);
+
 // =============================================================================
 // PROTECTED ROUTES (Require Sanctum authentication)
 // =============================================================================
@@ -50,6 +54,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/logout-all', [AuthController::class, 'logoutAll']);
     Route::get('/user', [AuthController::class, 'user']);
+    Route::put('/user', [AuthController::class, 'updateProfile']);
 
     // User's own notes (CRUD)
     Route::get('/my-notes', [NoteController::class, 'myNotes']);

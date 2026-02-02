@@ -5,9 +5,12 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\MaterialResource;
 use App\Models\Note;
+use App\Models\Purchase;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Laravel\Sanctum\PersonalAccessToken;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class MaterialController extends Controller
 {
@@ -104,5 +107,50 @@ class MaterialController extends Controller
         return response()->json([
             'data' => new MaterialResource($note),
         ]);
+    }
+
+    /**
+     * Download a purchased note file.
+     *
+     * This endpoint is public (no auth:sanctum middleware) because it is opened
+     * in an external browser via url_launcher, which cannot send Bearer headers.
+     * Authentication is performed manually via the ?token= query parameter.
+     */
+    public function download(Request $request, Note $note): BinaryFileResponse|JsonResponse
+    {
+        // 1. Authenticate via query-param token
+        $token = $request->query('token');
+
+        if (!$token) {
+            abort(401, 'Authentication token is required.');
+        }
+
+        $accessToken = PersonalAccessToken::findToken($token);
+
+        if (!$accessToken) {
+            abort(401, 'Invalid authentication token.');
+        }
+
+        $user = $accessToken->tokenable;
+
+        // 2. Verify the user has a completed purchase for this note
+        $purchase = Purchase::where('user_id', $user->id)
+            ->where('note_id', $note->id)
+            ->where('status', 'completed')
+            ->first();
+
+        if (!$purchase) {
+            abort(403, 'You have not purchased this note.');
+        }
+
+        // 3. Get the note file via Spatie MediaLibrary
+        $media = $note->getFirstMedia('note_file');
+
+        if (!$media) {
+            abort(404, 'File not found.');
+        }
+
+        // 4. Stream the file download
+        return response()->download($media->getPath(), $media->file_name);
     }
 }

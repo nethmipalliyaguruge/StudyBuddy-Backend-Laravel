@@ -105,6 +105,27 @@ class AuthController extends Controller
     }
 
     /**
+     * Update authenticated user's profile.
+     */
+    public function updateProfile(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
+            'phone' => ['nullable', 'string', 'max:20'],
+        ]);
+
+        $user->update($validated);
+
+        return response()->json([
+            'message' => 'Profile updated successfully',
+            'user' => new UserResource($user->fresh()),
+        ]);
+    }
+
+    /**
      * Revoke all tokens for the user (logout from all devices).
      */
     public function logoutAll(Request $request): JsonResponse

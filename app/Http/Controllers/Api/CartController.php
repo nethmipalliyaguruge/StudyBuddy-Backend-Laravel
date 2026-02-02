@@ -10,6 +10,7 @@ use App\Models\Purchase;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Stripe\Stripe;
 use Stripe\Checkout\Session as StripeSession;
 
@@ -93,20 +94,23 @@ class CartController extends Controller
     }
 
     /**
-     * Process checkout and create Stripe session.
+     * Process checkout — create purchases directly (no payment gateway).
      */
     public function checkout(Request $request): JsonResponse
     {
-        $validated = $request->validate([
-            'cart_ids' => ['required', 'array', 'min:1'],
-            'cart_ids.*' => ['integer', 'exists:notes,id'],
-        ]);
+        // Accept material_ids (Flutter) with fallback to cart_ids
+        $ids = $request->input('material_ids', $request->input('cart_ids'));
 
-        $cartIds = $validated['cart_ids'];
+        if (empty($ids) || !is_array($ids)) {
+            return response()->json([
+                'error' => 'No items provided for checkout.',
+            ], 422);
+        }
+
         $user = Auth::user();
 
-        // Get valid notes
-        $notes = Note::whereIn('id', $cartIds)
+        // Get valid approved notes (exclude user's own)
+        $notes = Note::whereIn('id', $ids)
             ->where('status', 'approved')
             ->where('user_id', '!=', $user->id)
             ->get();
@@ -131,75 +135,38 @@ class CartController extends Controller
             ], 422);
         }
 
-        // Create pending purchases
-        $purchases = [];
-        $lineItems = [];
+        // Create completed purchases directly
         $commissionRate = 0.10; // 10% commission
 
-        foreach ($notes as $note) {
-            $commission = $note->price * $commissionRate;
+        $purchases = DB::transaction(function () use ($notes, $user, $commissionRate) {
+            $created = [];
 
-            $purchase = Purchase::create([
-                'user_id' => $user->id,
-                'note_id' => $note->id,
-                'price' => $note->price,
-                'commission' => $commission,
-                'status' => 'pending',
-                'payment_method' => 'stripe',
-            ]);
-
-            $purchases[] = $purchase;
-
-            $lineItems[] = [
-                'price_data' => [
-                    'currency' => 'lkr',
-                    'product_data' => [
-                        'name' => $note->title,
-                        'description' => substr($note->description, 0, 100),
-                    ],
-                    'unit_amount' => (int)($note->price * 100), // Convert to cents
-                ],
-                'quantity' => 1,
-            ];
-        }
-
-        // Create Stripe checkout session
-        Stripe::setApiKey(config('services.stripe.secret'));
-
-        try {
-            $session = StripeSession::create([
-                'payment_method_types' => ['card'],
-                'line_items' => $lineItems,
-                'mode' => 'payment',
-                'success_url' => $request->input('success_url', config('app.url') . '/api/checkout/success') . '?session_id={CHECKOUT_SESSION_ID}',
-                'cancel_url' => $request->input('cancel_url', config('app.url') . '/api/checkout/cancel'),
-                'customer_email' => $user->email,
-                'metadata' => [
+            foreach ($notes as $note) {
+                $created[] = Purchase::create([
                     'user_id' => $user->id,
-                    'purchase_ids' => implode(',', array_map(fn($p) => $p->id, $purchases)),
-                ],
-            ]);
-
-            // Update purchases with session ID
-            foreach ($purchases as $purchase) {
-                $purchase->update(['stripe_session_id' => $session->id]);
+                    'note_id' => $note->id,
+                    'price' => $note->price,
+                    'commission' => $note->price * $commissionRate,
+                    'status' => 'completed',
+                    'payment_method' => 'direct',
+                    'paid_at' => now(),
+                ]);
             }
 
-            return response()->json([
-                'checkout_url' => $session->url,
-                'session_id' => $session->id,
-            ]);
-        } catch (\Exception $e) {
-            // Clean up pending purchases on failure
-            foreach ($purchases as $purchase) {
-                $purchase->update(['status' => 'failed']);
-            }
+            return $created;
+        });
 
-            return response()->json([
-                'error' => 'Failed to create checkout session.',
-                'message' => $e->getMessage(),
-            ], 500);
-        }
+        // Load relationships for the response
+        $purchaseIds = array_map(fn($p) => $p->id, $purchases);
+        $purchases = Purchase::whereIn('id', $purchaseIds)
+            ->with(['note.module.level.school', 'note.media'])
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Purchase completed successfully.',
+            'purchases' => PurchaseResource::collection($purchases),
+        ]);
     }
 
     /**
